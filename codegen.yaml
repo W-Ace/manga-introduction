@@ -1,0 +1,10 @@
+schema: https://graphql.anilist.co/
+documents: './**/*.tsx'
+generates:
+  graphql/generated.tsx:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      withHooks: true
