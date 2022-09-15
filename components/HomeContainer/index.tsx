@@ -1,25 +1,11 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, gql } from '@apollo/client';
 import DetailDialog from '@/components/DetailDialog';
-import { useGetAnimateQuery } from '@/graphql/generated';
+import Pagination from '@/components/Pagination';
+import { useGetAnimateLazyQuery } from '@/graphql/generated';
 
-interface IAnimate {
-  id: number,
-  title: {
-    native: string
-  },
-  coverImage: {
-    large: string
-  },
-  bannerImage: string
-}
-
-const Container = styled.div`
-  text-align: center;
-`
-
-const Header = styled.div`
+const StyledHeader = styled.div`
   display: flex;
   align-items: center;
   height: 80px;
@@ -27,8 +13,15 @@ const Header = styled.div`
   padding: 0 20px;
 `
 
-const Title = styled.h1`
+const StyledTitle = styled.h1`
   color: #ffffff;
+`
+
+const StyledFooter = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
 `
 
 const StyledCardContainer = styled.div`
@@ -83,35 +76,57 @@ const GET_ANIMATE = gql`
   }
 `
 
+
 const HomeContainer: FC = () => {
   const [isShow, setIsShowDialog] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    perPage: 40
+  })
 
   const handleDialogOpen = () => {
     setIsShowDialog(true)
   }
 
+  const handlePageChange = (_: object, page: number) => {
+    setPagination({
+      ...pagination,
+      currentPage: page,
+    })
+  }
+
   const Animate: FC = () => {
-    const { loading, error, data } = useGetAnimateQuery(
+    const [getAnimate, { loading, error, data }] = useGetAnimateLazyQuery(
       {
         variables: {
-          page: 1,
-          perPage: 40
+          page: pagination.currentPage,
+          perPage: pagination.perPage
         }
       }
     )
-  
-    const animateList = data?.Page?.media;
+
+    useEffect(() => {
+      getAnimate();
+    }, [pagination])
+
+    const animateList = data?.Page?.media || [];
   
     if (loading) return <></>;
-  
+    
     return (
       <>
         <StyledCardContainer>
-          {animateList.map((animate) => (
-            <StyledCard onClick={handleDialogOpen}>
+          {animateList.map((animate, index) => (
+            <StyledCard onClick={handleDialogOpen} key={animate?.id ?? index}>
               <div>
-                <StyledCardImage src={animate?.coverImage?.large}></StyledCardImage>
-                <StyledCardName>{animate?.title?.native}</StyledCardName>
+                {animate?.coverImage?.large ? (
+                  <>
+                    <StyledCardImage src={animate.coverImage.large}></StyledCardImage>
+                    <StyledCardName>{animate?.title?.native}</StyledCardName>
+                  </>
+                ) : (
+                  <></>
+                )}
               </div>
             </StyledCard>
           ))}
@@ -122,12 +137,15 @@ const HomeContainer: FC = () => {
 
   return (
     <>
-      <Header>
-        <Title>
+      <StyledHeader>
+        <StyledTitle>
           Anime
-        </Title>
-      </Header>
+        </StyledTitle>
+      </StyledHeader>
       <Animate/>
+      <StyledFooter>
+        <Pagination count={10} color='primary' onChange={handlePageChange}/>
+      </StyledFooter>
       <DetailDialog show={isShow}/>
     </>
   )
