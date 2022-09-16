@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, gql } from '@apollo/client';
 import DetailDialog from '@/components/DetailDialog';
@@ -81,7 +81,10 @@ const HomeContainer: FC = () => {
   const [isShow, setIsShowDialog] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
-    perPage: 40
+    perPage: 40,
+  })
+  const [pageData, setPageData] = useState({
+    pageCount: 0,
   })
 
   const handleDialogOpen = () => {
@@ -95,7 +98,7 @@ const HomeContainer: FC = () => {
     })
   }
 
-  const Animate: FC = () => {
+  const Animate: FC = useCallback(() => {
     const [getAnimate, { loading, error, data }] = useGetAnimateLazyQuery(
       {
         variables: {
@@ -107,7 +110,15 @@ const HomeContainer: FC = () => {
 
     useEffect(() => {
       getAnimate();
-    }, [pagination])
+
+      const total = data?.Page?.pageInfo?.total || 0;
+      const perPage = data?.Page?.pageInfo?.perPage || 0;
+
+      setPageData({
+        ...pageData,
+        pageCount: Math.ceil(total / perPage) || pageData.pageCount
+      })
+    }, [data])
 
     const animateList = data?.Page?.media || [];
   
@@ -133,7 +144,7 @@ const HomeContainer: FC = () => {
         </StyledCardContainer>
       </>
     )
-  }
+  }, [pagination])
 
   return (
     <>
@@ -144,7 +155,7 @@ const HomeContainer: FC = () => {
       </StyledHeader>
       <Animate/>
       <StyledFooter>
-        <Pagination count={10} color='primary' onChange={handlePageChange}/>
+        <Pagination count={pageData.pageCount} color='primary' onChange={handlePageChange}/>
       </StyledFooter>
       <DetailDialog show={isShow}/>
     </>
