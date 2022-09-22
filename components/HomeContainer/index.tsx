@@ -1,9 +1,9 @@
 import { FC, useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useQuery, gql } from '@apollo/client';
+import { gql } from '@apollo/client';
 import DetailDialog from '@/components/DetailDialog';
 import Pagination from '@/components/Pagination';
-import { useGetAnimateLazyQuery } from '@/graphql/generated';
+import { useGetAnimateLazyQuery, Media } from '@/graphql/generated';
 
 const StyledHeader = styled.div`
   display: flex;
@@ -71,6 +71,8 @@ const GET_ANIMATE = gql`
           large
         }
         bannerImage
+        meanScore,
+        description
       }
     }
   }
@@ -87,8 +89,24 @@ const HomeContainer: FC = () => {
     pageCount: 0,
   })
 
-  const handleDialogOpen = () => {
+  const [dialogData, setDialogData] = useState({
+    bannerImage: '',
+    meanScore: 0,
+    description: ''
+  })
+
+  const handleDialogOpen = (animate: Media) => {
+    setDialogData({
+      ...dialogData,
+      bannerImage: animate?.bannerImage || '',
+      meanScore: animate.meanScore || 0,
+      description: animate.description || ''
+    })
     setIsShowDialog(true)
+  }
+
+  const handleDialogClose = () => {
+    setIsShowDialog(false)
   }
 
   const handlePageChange = (_: object, page: number) => {
@@ -128,7 +146,7 @@ const HomeContainer: FC = () => {
       <>
         <StyledCardContainer>
           {animateList.map((animate, index) => (
-            <StyledCard onClick={handleDialogOpen} key={animate?.id ?? index}>
+            <StyledCard onClick={() => handleDialogOpen(animate as Media)} key={animate?.id ?? index}>
               <div>
                 {animate?.coverImage?.large ? (
                   <>
@@ -157,7 +175,7 @@ const HomeContainer: FC = () => {
       <StyledFooter>
         <Pagination count={pageData.pageCount} color='primary' onChange={handlePageChange}/>
       </StyledFooter>
-      <DetailDialog show={isShow}/>
+      <DetailDialog show={isShow} description={dialogData.description} bannerImage={dialogData.bannerImage} meanScore={dialogData.meanScore} onClose={handleDialogClose}/>
     </>
   )
 }

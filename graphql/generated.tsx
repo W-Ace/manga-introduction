@@ -4675,7 +4675,7 @@ export type GetAnimateQueryVariables = Exact<{
 }>;
 
 
-export type GetAnimateQuery = { __typename?: 'Query', Page?: { __typename?: 'Page', pageInfo?: { __typename?: 'PageInfo', total?: number | null, currentPage?: number | null, lastPage?: number | null, hasNextPage?: boolean | null, perPage?: number | null } | null, media?: Array<{ __typename?: 'Media', id: number, bannerImage?: string | null, title?: { __typename?: 'MediaTitle', native?: string | null } | null, coverImage?: { __typename?: 'MediaCoverImage', large?: string | null } | null } | null> | null } | null };
+export type GetAnimateQuery = { __typename?: 'Query', Page?: { __typename?: 'Page', pageInfo?: { __typename?: 'PageInfo', total?: number | null, currentPage?: number | null, lastPage?: number | null, hasNextPage?: boolean | null, perPage?: number | null } | null, media?: Array<{ __typename?: 'Media', id: number, bannerImage?: string | null, meanScore?: number | null, description?: string | null, title?: { __typename?: 'MediaTitle', native?: string | null } | null, coverImage?: { __typename?: 'MediaCoverImage', large?: string | null } | null } | null> | null } | null };
 
 
 export const GetAnimateDocument = gql`
@@ -4697,6 +4697,8 @@ export const GetAnimateDocument = gql`
         large
       }
       bannerImage
+      meanScore
+      description
     }
   }
 }
